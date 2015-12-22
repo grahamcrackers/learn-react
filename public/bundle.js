@@ -24339,8 +24339,8 @@
 
 	var React = __webpack_require__(1);
 	var Main = __webpack_require__(210);
-	var Home = __webpack_require__(211);
-	var Profile = __webpack_require__(212);
+	var Home = __webpack_require__(212);
+	var Profile = __webpack_require__(213);
 	var Router = __webpack_require__(159);
 	var Route = Router.Route;
 	var IndexRoute = Router.IndexRoute;
@@ -24359,7 +24359,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var SearchGithub = __webpack_require__(220);
+	var SearchGithub = __webpack_require__(211);
 
 	var Main = React.createClass({
 	    displayName: 'Main',
@@ -24393,6 +24393,55 @@
 /* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var Router = __webpack_require__(159);
+
+	var SearchGithub = React.createClass({
+	    displayName: 'SearchGithub',
+
+	    mixins: [Router.History],
+	    getRef: function getRef(ref) {
+	        this.usernameRef = ref;
+	    },
+	    handleSubmit: function handleSubmit() {
+	        var username = this.usernameRef.value;
+	        this.usernameRef.value = '';
+	        this.history.pushState(null, "/profile/" + username);
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            { className: 'col-sm-12' },
+	            React.createElement(
+	                'form',
+	                { onSubmit: this.handleSubmit },
+	                React.createElement(
+	                    'div',
+	                    { className: 'form-group col-sm-7' },
+	                    React.createElement('input', { type: 'text', className: 'form-control', ref: this.getRef })
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { className: 'form-group col-sm-5' },
+	                    React.createElement(
+	                        'button',
+	                        { type: 'submit', className: 'btn btn-block btn-primary' },
+	                        'Search Github'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = SearchGithub;
+
+/***/ },
+/* 212 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use strict";
 
 	var React = __webpack_require__(1);
@@ -24412,18 +24461,18 @@
 	module.exports = Home;
 
 /***/ },
-/* 212 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
 	var Router = __webpack_require__(159);
-	var Repos = __webpack_require__(213);
-	var UserProfile = __webpack_require__(214);
-	var Notes = __webpack_require__(215);
-	var ReactFireMixin = __webpack_require__(218);
-	var FireBase = __webpack_require__(219);
+	var Repos = __webpack_require__(214);
+	var UserProfile = __webpack_require__(215);
+	var Notes = __webpack_require__(216);
+	var ReactFireMixin = __webpack_require__(219);
+	var FireBase = __webpack_require__(220);
 	var helpers = __webpack_require__(221);
 
 	var Profile = React.createClass({
@@ -24439,18 +24488,26 @@
 	    },
 	    componentDidMount: function componentDidMount() {
 	        this.ref = new FireBase('https://luminous-fire-154.firebaseio.com/');
-	        var childRef = this.ref.child(this.props.params.username);
+	        this.init(this.props.params.username);
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        console.log('The next props are: ', nextProps);
+	        this.unbind('notes');
+	        this.init(nextProps.params.username);
+	    },
+	    componentWillUnmount: function componentWillUnmount() {
+	        this.unbind('notes');
+	    },
+	    init: function init(username) {
+	        var childRef = this.ref.child(username);
 	        this.bindAsArray(childRef, 'notes');
 
-	        helpers.getGithubInfo(this.props.params.username).then((function (data) {
+	        helpers.getGithubInfo(username).then((function (data) {
 	            this.setState({
 	                bio: data.bio,
 	                repos: data.repos
 	            });
 	        }).bind(this));
-	    },
-	    componentWillUnmount: function componentWillUnmount() {
-	        this.unbind('notes');
 	    },
 	    handleAddNote: function handleAddNote(newNote) {
 
@@ -24484,29 +24541,53 @@
 	module.exports = Profile;
 
 /***/ },
-/* 213 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	var React = __webpack_require__(1);
 
 	var Repos = React.createClass({
-	    displayName: 'Repos',
+	    displayName: "Repos",
 
 	    propTypes: {
 	        username: React.PropTypes.string.isRequired,
 	        repos: React.PropTypes.array.isRequired
 	    },
 	    render: function render() {
-	        console.log('Repos: ', this.props.repos);
+	        var repos = this.props.repos.map(function (repo, index) {
+	            return React.createElement(
+	                "li",
+	                { className: "list-group-item", key: index },
+	                repo.html_url && React.createElement(
+	                    "h4",
+	                    null,
+	                    React.createElement(
+	                        "a",
+	                        { href: repo.html_url },
+	                        repo.name
+	                    )
+	                ),
+	                repo.description && React.createElement(
+	                    "p",
+	                    null,
+	                    repo.description
+	                )
+	            );
+	        });
 	        return React.createElement(
-	            'div',
+	            "div",
 	            null,
 	            React.createElement(
-	                'p',
+	                "h3",
 	                null,
-	                ' REPOS '
+	                " User Repos "
+	            ),
+	            React.createElement(
+	                "ul",
+	                { className: "list-group" },
+	                repos
 	            )
 	        );
 	    }
@@ -24515,7 +24596,7 @@
 	module.exports = Repos;
 
 /***/ },
-/* 214 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24534,17 +24615,68 @@
 	        return React.createElement(
 	            'div',
 	            null,
-	            React.createElement(
-	                'p',
-	                null,
-	                ' USER PROFILE! '
+	            this.props.bio.avatar_url && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                React.createElement('img', { src: this.props.bio.avatar_url, className: 'img-rounded img-responsive' })
 	            ),
-	            React.createElement(
-	                'p',
-	                null,
-	                ' Username: ',
-	                this.props.username,
-	                ' '
+	            this.props.bio.name && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Name: ',
+	                this.props.bio.name
+	            ),
+	            this.props.bio.login && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Username: ',
+	                this.props.bio.login
+	            ),
+	            this.props.bio.email && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Email: ',
+	                this.props.bio.email
+	            ),
+	            this.props.bio.location && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Location: ',
+	                this.props.bio.location
+	            ),
+	            this.props.bio.company && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Company: ',
+	                this.props.bio.company
+	            ),
+	            this.props.bio.followers && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Followers: ',
+	                this.props.bio.followers
+	            ),
+	            this.props.bio.following && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Following: ',
+	                this.props.bio.following
+	            ),
+	            this.props.bio.public_repos && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Public Repos: ',
+	                this.props.bio.public_repos
+	            ),
+	            this.props.bio.blog && React.createElement(
+	                'li',
+	                { className: 'list-group-item' },
+	                'Blog: ',
+	                React.createElement(
+	                    'a',
+	                    { href: this.props.bio.blog },
+	                    this.props.bio.blog
+	                )
 	            )
 	        );
 	    }
@@ -24553,14 +24685,14 @@
 	module.exports = UserProfile;
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var NotesList = __webpack_require__(216);
-	var AddNote = __webpack_require__(217);
+	var NotesList = __webpack_require__(217);
+	var AddNote = __webpack_require__(218);
 
 	var Notes = React.createClass({
 	    displayName: 'Notes',
@@ -24591,7 +24723,7 @@
 	module.exports = Notes;
 
 /***/ },
-/* 216 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24622,7 +24754,7 @@
 	module.exports = NotesList;
 
 /***/ },
-/* 217 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24666,7 +24798,7 @@
 	module.exports = AddNote;
 
 /***/ },
-/* 218 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -25037,7 +25169,7 @@
 
 
 /***/ },
-/* 219 */
+/* 220 */
 /***/ function(module, exports) {
 
 	/*! @license Firebase v2.3.2
@@ -25309,55 +25441,6 @@
 
 	module.exports = Firebase;
 
-
-/***/ },
-/* 220 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var Router = __webpack_require__(159);
-
-	var SearchGithub = React.createClass({
-	    displayName: 'SearchGithub',
-
-	    mixins: [Router.History],
-	    getRef: function getRef(ref) {
-	        this.usernameRef = ref;
-	    },
-	    handleSubmit: function handleSubmit() {
-	        var username = this.usernameRef.value;
-	        this.usernameRef.value = '';
-	        this.history.pushState(null, "profile/" + username);
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            'div',
-	            { className: 'col-sm-12' },
-	            React.createElement(
-	                'form',
-	                { onSubmit: this.handleSubmit },
-	                React.createElement(
-	                    'div',
-	                    { className: 'form-group col-sm-7' },
-	                    React.createElement('input', { type: 'text', className: 'form-control', ref: this.getRef })
-	                ),
-	                React.createElement(
-	                    'div',
-	                    { className: 'form-group col-sm-5' },
-	                    React.createElement(
-	                        'button',
-	                        { type: 'submit', className: 'btn btn-block btn-primary' },
-	                        'Search Github'
-	                    )
-	                )
-	            )
-	        );
-	    }
-	});
-
-	module.exports = SearchGithub;
 
 /***/ },
 /* 221 */
