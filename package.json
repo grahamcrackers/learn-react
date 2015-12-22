@@ -9,6 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^0.8.1",
     "babel": "^6.3.13",
     "firebase": "^2.3.2",
     "history": "^1.16.0",
